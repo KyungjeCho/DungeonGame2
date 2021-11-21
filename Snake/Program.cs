@@ -169,6 +169,7 @@ namespace Snake
                 staff = new TextObject(staffPanel, new Vector2(1, 2), "MADEBYKJC");
                 version = new TextObject(staffPanel, new Vector2(1, 4), "V.0.0.0");
 
+                gm.Reset();
                 while(true)
                 {
                     if (isGameOver)

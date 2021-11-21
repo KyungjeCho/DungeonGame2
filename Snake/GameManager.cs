@@ -24,5 +24,12 @@ namespace Snake
             else
                 speed = 100 - (level - 1) * 10;
         }
+
+        public void Reset()
+        {
+            score = 0;
+            speed = 100;
+            level = 1;
+        }
     }
 }
