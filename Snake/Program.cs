@@ -140,8 +140,8 @@ namespace Snake
             Snake snake;
             Apple apple;
             TextObject pause;
-            TextObject staff;
-            TextObject version;
+            AsciiObject staff;
+            AsciiObject version;
             AsciiObject score;
             AsciiObject level;
 
@@ -166,8 +166,8 @@ namespace Snake
                 score = new AsciiObject(uiPanel, new Vector2(1, 2), "SCORE: " + gm.score.ToString());
                 level = new AsciiObject(uiPanel, new Vector2(1, 4), "LEVEL: " + gm.level.ToString());
 
-                staff = new TextObject(staffPanel, new Vector2(1, 2), "MADEBYKJC");
-                version = new TextObject(staffPanel, new Vector2(1, 4), "V.0.0.0");
+                staff = new AsciiObject(staffPanel, new Vector2(1, 2), "MADE BY KJC");
+                version = new AsciiObject(staffPanel, new Vector2(1, 4), "VER. 0.0.0");
 
                 gm.Reset();
                 while(true)
