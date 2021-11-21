@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DungeonGame
+namespace Snake
 {
     public partial class Vector2
     {
@@ -30,8 +30,9 @@ namespace DungeonGame
         public Screen screen;
         public List<GameObject> gameObjects = new List<GameObject>();
 
-        public Panel(Screen _s, int _x, int _y, int _width, int _height)
+        public Panel(Screen _s, int _x, int _y, int _width, int _height, bool isMap=true)
         {
+            _s.AddPanel(this);
             this.screen = _s;
             this.Position = new Vector2(_x, _y);
             this.Height = _height;
@@ -50,6 +51,9 @@ namespace DungeonGame
                 buffer.Add(temp);
                 colorMap.Add(colorTemp);
             }
+
+            if (isMap)
+                this.AddGameObject(new Map(this));
         }
 
         public void AddGameObject(GameObject _go)
