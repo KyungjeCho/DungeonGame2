@@ -25,7 +25,7 @@ namespace Snake
             IOTextObject title;
             ConsoleKeyInfo keys;
             int select = 0;
-            string path = "../../../../title.txt";
+            string path = "./title.txt";
 
             bool isEnter = false;
 
