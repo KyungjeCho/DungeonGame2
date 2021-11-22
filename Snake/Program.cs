@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
-using System.IO;
 
 namespace Snake
 {
@@ -71,11 +71,13 @@ namespace Snake
                         }
                         else if (select == 2)
                         {
-                            
+                            new RankingScene();
+                            break;
                         }
                         else if (select == 3)
                         {
                             new StaffScene();
+                            break;
                         }
                         else if (select == 4)
                         {
@@ -131,7 +133,7 @@ namespace Snake
 
         class InGameScene
         {
-            private Screen Screen = new Screen(30, 30);
+            private Screen Screen = new Screen(40, 40);
             GameManager gm = GameManager.Instance;
             Panel gamePanel;
             Panel uiPanel;
@@ -153,12 +155,12 @@ namespace Snake
             public InGameScene()
             {
                 //패널 생성 
-                gamePanel = new Panel(Screen, 0, 0, 20, 20);
-                uiPanel = new Panel(Screen, 20, 0, 10, 10);
-                staffPanel = new Panel(Screen, 20, 10, 10, 10, false);
+                gamePanel = new Panel(Screen, 0, 0, 30, 30);
+                uiPanel = new Panel(Screen, 30, 0, 10, 10);
+                staffPanel = new Panel(Screen, 30, 10, 10, 10, false);
 
                 // 게임 오브젝트 생성
-                snake = new Snake(gamePanel, new Vector2(9, 9));
+                snake = new Snake(gamePanel, new Vector2(gamePanel.Width / 2, gamePanel.Height / 2));
                 apple = new Apple(gamePanel);
                 pause = new TextObject(gamePanel, new Vector2(8, 9), "PAUSE");
                 pause.isVisible = false;
@@ -167,14 +169,14 @@ namespace Snake
                 level = new AsciiObject(uiPanel, new Vector2(1, 4), "LEVEL: " + gm.level.ToString());
 
                 staff = new AsciiObject(staffPanel, new Vector2(1, 2), "MADE BY KJC");
-                version = new AsciiObject(staffPanel, new Vector2(1, 4), "VER. 0.0.0");
+                version = new AsciiObject(staffPanel, new Vector2(1, 4), "VER. 0.1.0");
 
                 gm.Reset();
                 while(true)
                 {
                     if (isGameOver)
                     {
-                        new GameOverScene();
+                        new EnrollRankingScene();
                         break;
                     }
                     Update();
@@ -221,6 +223,7 @@ namespace Snake
                 score.Text = "SCORE: " + gm.score;
                 level.Text = "LEVEL: " + gm.level;
                 gm.checkLevel();
+
                 Thread.Sleep(gm.speed);
             }
 
@@ -277,7 +280,7 @@ namespace Snake
             AsciiObject title;
 
             ConsoleKeyInfo keys;
-
+            bool isEnter = false;
             public StaffScene()
             {
                 staffPanel = new Panel(screen, 0, 0, 30, 30);
@@ -290,6 +293,11 @@ namespace Snake
                 title = new AsciiObject(staffPanel, new Vector2(4, 9), "https://patorjk.com/software/taag");
                 while (true)
                 {
+                    if (isEnter)
+                    {
+                        new IntroScene();
+                        break;
+                    }
                     Update();
                     Render();
                 }
@@ -297,6 +305,7 @@ namespace Snake
 
             private void Update()
             {
+                Input();
                 Thread.Sleep(100);
             }
 
@@ -315,6 +324,116 @@ namespace Snake
                     switch (keys.Key)
                     {
                         case ConsoleKey.Enter:
+                            isEnter = true;
+                            break;
+                    }
+                }
+            }
+
+        }
+
+        class EnrollRankingScene
+        {
+            private Screen screen = new Screen(20, 20);
+
+            Panel enrollRankingPanel;
+
+            UpDownArrow upDownArrow;
+
+            List<AlphabetObject> alphabetObjects = new List<AlphabetObject>();
+            ConsoleKeyInfo keys;
+
+            int index = 0;
+            bool isEnter = false;
+
+            public EnrollRankingScene()
+            {
+                Console.Clear();
+                enrollRankingPanel = new Panel(screen, 0, 0, 20, 20);
+
+                upDownArrow = new UpDownArrow(enrollRankingPanel, new Vector2(8, 8));
+
+                for (int i = 0; i < 3; i++)
+                    alphabetObjects.Add(new AlphabetObject(enrollRankingPanel, new Vector2(8 + (i * 2), 10)));
+
+                alphabetObjects[0].isSelected = true;
+
+                while (true)
+                {
+                    if (isEnter)
+                    {
+                        //todo: File IO and Ranking Update 
+                        GameManager gm = GameManager.Instance;
+
+                        List<Ranking> rankings = gm.LoadXML();
+                        
+                        string name = "";
+                        for (int i = 0; i < alphabetObjects.Count; i++)
+                        {
+                            name += (char)(65 + alphabetObjects[i].alphanumber);
+                        }
+
+                        Ranking temp = new Ranking() { Name = name, Score = gm.score, Level = gm.level };
+
+                        rankings.Add(temp);
+
+                        // Score 순으로 내림차순 
+                        rankings = rankings.OrderByDescending(x => x.Score).ToList();
+                        rankings.RemoveAt(10);
+
+                        gm.SaveXML(rankings);
+
+                        new GameOverScene();
+                        break;
+                    }
+                    Update();
+                    Render();
+                }
+            }
+            private void Update()
+            {
+                Input();
+
+                upDownArrow.Position.X = 8 + (index * 2);
+                Thread.Sleep(100);
+            }
+            private void Render()
+            {
+                Console.SetCursorPosition(0, 0);
+                screen.Draw();
+                screen.PrintBufferToScreen();
+            }
+            private void Input()
+            {
+                if (Console.KeyAvailable)
+                {
+                    keys = Console.ReadKey(true);
+                    switch (keys.Key)
+                    {
+                        case ConsoleKey.UpArrow:
+                            alphabetObjects[index].alphanumber = (alphabetObjects[index].alphanumber + 1) % 26;
+                            break;
+                        case ConsoleKey.DownArrow:
+                            alphabetObjects[index].alphanumber = (26 + alphabetObjects[index].alphanumber - 1) % 26;
+                            break;
+                        case ConsoleKey.RightArrow:
+                            if (index < alphabetObjects.Count - 1)
+                            {
+                                alphabetObjects[index].isSelected = false;
+                                index++;
+                                alphabetObjects[index].isSelected = true;
+                            }
+                            break;
+                        case ConsoleKey.LeftArrow:
+                            if (index > 0)
+                            {
+                                alphabetObjects[index].isSelected = false;
+                                index--;
+                                alphabetObjects[index].isSelected = true;
+                            }
+                            break;
+                        case ConsoleKey.Enter:
+                            isEnter = true;
                             break;
                     }
                 }
@@ -397,6 +516,68 @@ namespace Snake
                             if (select < menu.Count - 1)
                                 select++;
                             break;
+                        case ConsoleKey.Enter:
+                            isEnter = true;
+                            break;
+                    }
+                }
+            }
+        }
+
+        class RankingScene
+        {
+            private Screen screen = new Screen(20, 20);
+
+            public Panel rankingPanel;
+            public RankingObject rankingObject;
+
+            ConsoleKeyInfo keys;
+
+            bool isEnter = false;
+            public RankingScene()
+            {
+                Console.Clear();
+
+                List<Ranking> rankings = GameManager.Instance.LoadXML();
+
+                rankingPanel = new Panel(screen, 0, 0, 20, 20);
+
+                rankingObject = new RankingObject(rankingPanel, new Vector2(2, 2), rankings);
+
+                while(true)
+                {
+                    if (isEnter)
+                    {
+                        new IntroScene();
+                        return;
+                    }
+
+                    Update();
+                    Render();
+                }
+            }
+
+            private void Update()
+            {
+                Input();
+
+                Thread.Sleep(100);
+            }
+
+            private void Render()
+            {
+                Console.SetCursorPosition(0, 0);
+                screen.Draw();
+                screen.PrintBufferToScreen();
+            }
+
+            private void Input()
+            {
+                if (Console.KeyAvailable)
+                {
+                    keys = Console.ReadKey(true);
+                    switch (keys.Key)
+                    {
                         case ConsoleKey.Enter:
                             isEnter = true;
                             break;

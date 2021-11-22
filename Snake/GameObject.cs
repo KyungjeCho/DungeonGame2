@@ -339,4 +339,94 @@ namespace Snake
             Panel.colorMap[Position.Y][Position.X] = color;
         }
     }
+
+    public class UpDownArrow : GameObject
+    {
+        public int select = 0;
+        string upShape = "▲";
+        string downShape = "▼";
+        ConsoleColor color = ConsoleColor.Green;
+        
+        public UpDownArrow(Panel _p, Vector2 _position)
+        {
+            _p.AddGameObject(this);
+            Panel = _p;
+            Position = _position;
+        }
+        public override bool Collision(GameObject _go)
+        {
+            return false;
+        }
+
+        public override void Draw()
+        {
+            Panel.buffer[Position.Y][Position.X + (select * 2)] = upShape;
+            Panel.buffer[Position.Y + 4][Position.X + (select * 2)] = downShape;
+
+            Panel.colorMap[Position.Y][Position.X + (select * 2)] = color;
+            Panel.colorMap[Position.Y + 4][Position.X + (select * 2)] = color;
+
+        }
+    }
+
+    public class AlphabetObject : GameObject
+    {
+        public bool isSelected = false;
+        public int alphanumber = 0;
+        ConsoleColor selectedColor = ConsoleColor.Yellow;
+        ConsoleColor nonSelectedColor = ConsoleColor.White;
+
+        public AlphabetObject(Panel _p, Vector2 _position)
+        {
+            _p.AddGameObject(this);
+            Panel = _p;
+            Position = _position;
+        }
+        public override bool Collision(GameObject _go)
+        {
+            return false;
+        }
+
+        public override void Draw()
+        {
+            Panel.buffer[Position.Y][Position.X] = ((char)(65 + alphanumber)).ToString() + " ";
+            if (isSelected)
+                Panel.colorMap[Position.Y][Position.X] = selectedColor;
+            else
+                Panel.colorMap[Position.Y][Position.X] = nonSelectedColor;
+        }
+    }
+
+    public class RankingObject : GameObject
+    {
+        List<Ranking> rankings;
+        List<AsciiObject> textList = new List<AsciiObject>();
+
+        public RankingObject(Panel _p, Vector2 _position, List<Ranking> _rankings)
+        {
+            _p.AddGameObject(this);
+            Panel = _p;
+            Position = _position;
+            rankings = _rankings;
+
+            for (int i = 0; i < rankings.Count; i++)
+            {
+                string text = (i + 1) + ".    " + rankings[i].Name + "     " + rankings[i].Score;
+                textList.Add(new AsciiObject(Panel, new Vector2(Position.X, Position.Y + i), text));
+            }
+        }
+
+        public override bool Collision(GameObject _go)
+        {
+            return false;
+        }
+
+        public override void Draw()
+        {
+            foreach(var t in textList)
+            {
+                t.Draw();
+            }
+        }
+    }
 }
